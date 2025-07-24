@@ -1,8 +1,10 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useEffect } from 'react';
 import HomeScreen from './screens/HomeScreen';
 import PlannerScreen from './screens/PlannerScreen';
 import TodoScreen from './screens/TodoScreen';
+import { requestNotificationPermissions } from './storage/notifications';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,3 +19,14 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
+useEffect(() => {
+  const checkPermissions = async () => {
+    try {
+      await requestNotificationPermissions();
+    } catch (error) {
+      console.error('Notification permission error:', error);
+    }
+  };
+  checkPermissions();
+}, []);

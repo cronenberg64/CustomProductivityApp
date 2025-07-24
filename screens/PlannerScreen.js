@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import TaskCard from '../components/TaskCard';
 import colors from '../constants/colors';
+import { scheduleNotification } from '../storage/notifications';
 
 export default function PlannerScreen() {
   const [plannerData, setPlannerData] = useState({});
@@ -38,16 +39,21 @@ export default function PlannerScreen() {
   const addEvent = () => {
     if (newEvent.trim() && selectedDate) {
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
+      const newEventObj = {
+        id: Date.now().toString(),
+        text: newEvent.trim(),
+        date: dateKey,
+        time: format(selectedDate, 'HH:mm')
+      };
       const updatedData = {
         ...plannerData,
-        [dateKey]: [...(plannerData[dateKey] || []), {
-          id: Date.now().toString(),
-          text: newEvent.trim(),
-          date: dateKey
-        }]
+        [dateKey]: [...(plannerData[dateKey] || []), newEventObj]
       };
       setPlannerData(updatedData);
       savePlannerData(updatedData);
+      scheduleNotification(newEventObj).catch(error => {
+        console.error('Error scheduling notification:', error);
+      });
       setNewEvent('');
       setSelectedDate(null);
     }
