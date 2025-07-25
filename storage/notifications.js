@@ -6,14 +6,18 @@ export const requestNotificationPermissions = async () => {
 };
 
 export const scheduleNotification = async (event) => {
-  const triggerDate = new Date(event.date);
-  triggerDate.setMinutes(triggerDate.getMinutes() - 10);
+  const { status } = await Notifications.requestPermissionsAsync();
+  if (status !== 'granted') return;
 
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Reminder: ' + event.text,
-      body: `Starts in 10 minutes (${event.time})`
+      title: 'Event Reminder',
+      body: `Your event "${event.text}" starts soon!`,
+      sound: true,
+      data: { eventId: event.id }
     },
-    trigger: triggerDate
+    trigger: {
+      seconds: Math.max((event.timestamp - Date.now() - 600000) / 1000, 1)
+    }
   });
 };
