@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, StyleSheet, TextInput, View } from 'react-native';
+import { Button, StyleSheet, TextInput, View } from 'react-native';
+import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 import TaskCard from '../components/TaskCard';
 import colors from '../constants/colors';
 
@@ -37,7 +38,15 @@ export default function TodoScreen() {
       setTasks(updatedTasks);
       saveTasks(updatedTasks);
       setNewTask('');
+    } else {
+      Alert.alert('Empty Task', 'Please enter a task before adding');
     }
+  };
+
+  const deleteTask = (taskId) => {
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(updatedTasks);
+    saveTasks(updatedTasks);
   };
 
   return (
@@ -57,10 +66,25 @@ export default function TodoScreen() {
         />
       </View>
 
-      <FlatList
+      <SwipeListView
         data={tasks}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TaskCard task={item} />}
+        renderItem={({ item }) => (
+          <SwipeRow
+            rightOpenValue={-75}
+            disableRightSwipe
+            previewRowKey={tasks[0]?.id}
+          >
+            <View style={styles.deleteButtonContainer}>
+              <Button
+                title="Delete"
+                onPress={() => deleteTask(item.id)}
+                color={colors.error}
+              />
+            </View>
+            <TaskCard task={item} />
+          </SwipeRow>
+        )}
         contentContainerStyle={styles.list}
       />
     </View>
@@ -88,5 +112,12 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingBottom: 20
+  },
+  deleteButtonContainer: {
+    alignItems: 'flex-end',
+    flex: 1,
+    justifyContent: 'center',
+    paddingRight: 20,
+    backgroundColor: colors.error
   }
 });
